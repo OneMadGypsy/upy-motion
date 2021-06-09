@@ -180,7 +180,7 @@ mpu.start()
 from mpu6050 import MPU6050
 import utime
 
-mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51))
+mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
 
 while True:
     print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
