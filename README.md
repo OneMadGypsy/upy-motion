@@ -108,7 +108,7 @@ Arg             | Type       | Description                      | Default
 <br />
 
 **.rate(`rate`:int)**
->Sets the sample rate
+>Sets the sample rate. This number can be between 1 and 255. The higher the number, the slower the speed
 
 <br />
 
@@ -153,5 +153,36 @@ from mpu6050 import MPU6050
 
 MPU6050(1, 6, 7)
 ```
+<br />
 
+**FIFO**
 
+>Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin.
+
+```python
+from mpu6050 import MPU6050
+
+def handler(data:tuple):
+    if 'mpu' in globals():
+        print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
+        mpu.print_from_data(data)
+
+mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
+mpu.start()
+```
+
+<br />
+
+**polling**
+
+```python
+from mpu6050 import MPU6050
+import utime
+
+mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51))
+
+while True:
+    print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
+    mpu.print_data()
+    utime.sleep_ms(100)
+```
