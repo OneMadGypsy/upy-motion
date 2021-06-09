@@ -38,6 +38,7 @@ _To discus features, bugs or share your own project that utilize code in this re
 **MPU6050(`bus`, `sda`, `scl`, `intr`, `ofs`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `addr`, `freq`)**
 > Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate.
 
+
 Arg             | Type       | Description                      | Default
 ----------------|------------|----------------------------------|-------------
 **bus**         | int        | I2C bus id                       | **REQUIRED**  
@@ -71,6 +72,7 @@ Arg             | Type       | Description                      | Default
 
 **.data**
 >Returns gyroscope and accelerometer data. This is a `namedtuple` with the following properties
+
 Property    | Type  |  Description
 ------------|-------|-----------------
 **.acc_x**  | float | accelerometer x
