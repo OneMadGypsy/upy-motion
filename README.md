@@ -218,7 +218,7 @@ if mpu.passed_self_test:
 ```
 
 
-__or you can use the data directly__
+_or you can use the data directly_
 
 
 ```python
@@ -226,8 +226,8 @@ from mpu6050 import MPU6050
 
 def handler(data:tuple):
     if 'mpu' in globals():
-        asum = data.acc_x + data.acc_y + data.acc_z
-        gsum = data.gyro_x + data.gyro_y, data.gyro_z
+        asum = data.acc_x  + data.acc_y  + data.acc_z
+        gsum = data.gyro_x + data.gyro_y + data.gyro_z
 
 mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
 if mpu.passed_self_test:
