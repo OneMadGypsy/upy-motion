@@ -103,22 +103,22 @@ Arg             | Type       | Description                      | Default
 
 <br />
 
-**.dlpf(`dlpf`:int)**
+**.dlpf(`dlpf:int`)**
 >Sets the digital low-pass filter
 
 <br />
 
-**.rate(`rate`:int)**
+**.rate(`rate:int`)**
 >Sets the sample rate. This number can be between 1 and 255. The higher the number, the slower the speed
 
 <br />
 
-**.gyro(`rng`:int)**
+**.gyro(`rng:int`)**
 >Sets the gyroscope fullscale range
 
 <br />
 
-**.accel(`rng`:int)**
+**.accel(`rng:int`**
 >Sets the accelerometer fullscale range
 
 <br />
@@ -133,7 +133,7 @@ Arg             | Type       | Description                      | Default
 
 <br />
 
-**.print_from_data(`data`:tuple)**
+**.print_from_data(`data:tuple`)**
 >Prints the gyroscope and accelerometer data that was passed to it
 
 
