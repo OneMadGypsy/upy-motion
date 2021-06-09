@@ -128,11 +128,6 @@ Property    | Type  |  Description
 
 <br />
 
-**.rate(`rate:int`)**
->Sets the sample rate. This number can be between 1 and 255. The higher the number, the slower the speed
-
-<br />
-
 **.gyro(`rng:int`)**
 >Sets the gyroscope fullscale range. Possible values include the following
 
@@ -154,6 +149,11 @@ Property    | Type  |  Description
 **ACCEL_FS_4**  | 0x01
 **ACCEL_FS_8**  | 0x02
 **ACCEL_FS_16** | 0x03
+
+<br />
+
+**.rate(`rate:int`)**
+>Sets the sample rate. This number can be between 1 and 255. The higher the number, the slower the speed
 
 <br />
 
