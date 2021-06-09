@@ -118,7 +118,7 @@ Arg             | Type       | Description                      | Default
 
 <br />
 
-**.accel(`rng:int`**
+**.accel(`rng:int`)**
 >Sets the accelerometer fullscale range
 
 <br />
