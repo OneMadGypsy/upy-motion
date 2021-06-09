@@ -158,7 +158,7 @@ MPU6050(1, 6, 7)
 
 **FIFO**
 
->Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin. Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script.
+>Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin. Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script. The `data` argument in the handler will contain all of the accelerometer and gyroscope data.
 
 ```python
 from mpu6050 import MPU6050
@@ -189,4 +189,37 @@ if mpu.passed_self_test:
         print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
         mpu.print_data()
         utime.sleep_ms(100)
+```
+
+<br />
+
+**unpacking data**
+>Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script.
+
+```python
+from mpu6050 import MPU6050
+import utime
+
+mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+
+if mpu.passed_self_test:
+    while True:
+        ax, ay, az, gx, gy, cz = mpu.data
+```
+
+
+__or you can use the data directly__
+
+
+```python
+from mpu6050 import MPU6050
+
+def handler(data:tuple):
+    if 'mpu' in globals():
+        asum = data.acc_x + data.acc_y + data.acc_z
+        gsum = data.gyro_x + data.gyro_y, data.gyro_z
+
+mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
+if mpu.passed_self_test:
+    mpu.start()
 ```
