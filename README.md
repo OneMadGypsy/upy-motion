@@ -147,7 +147,7 @@ Arg             | Type       | Description                      | Default
 
 **callibration**
 
->The very first thing you should do is run the below script, with the proper `bus`, `sda` and `scl`. When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to do this will result in your device auto-callibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run callibration from a fresh power-up of the ddevice.
+>The very first thing you should do is run the below script, with the proper `bus`, `sda` and `scl`. When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to do this will result in your device auto-callibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run callibration from a fresh power-up of the device.
 
 ```python
 from mpu6050 import MPU6050
