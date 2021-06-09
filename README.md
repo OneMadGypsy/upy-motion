@@ -114,7 +114,17 @@ Property    | Type  |  Description
 <br />
 
 **.dlpf(`dlpf:int`)**
->Sets the digital low-pass filter
+>Sets the digital low-pass filter. Possible values include the following
+
+ Const          | Value
+----------------|-------
+**DLPF_BW_256** | 0x00
+**DLPF_BW_188** | 0x01
+**DLPF_BW_98**  | 0x02
+**DLPF_BW_42**  | 0x03
+**DLPF_BW_20**  | 0x04
+**DLPF_BW_10**  | 0x05
+**DLPF_BW_5**   | 0x06
 
 <br />
 
@@ -124,12 +134,26 @@ Property    | Type  |  Description
 <br />
 
 **.gyro(`rng:int`)**
->Sets the gyroscope fullscale range
+>Sets the gyroscope fullscale range. Possible values include the following
+
+ Const          | Value
+----------------|-------
+**GYRO_FS_250** | 0x00
+**GYRO_FS_500** | 0x01
+**GYRO_FS_1000**| 0x02
+**GYRO_FS_2000**| 0x03
 
 <br />
 
 **.accel(`rng:int`)**
->Sets the accelerometer fullscale range
+>Sets the accelerometer fullscale range. Possible values include the following
+
+ Const          | Value
+----------------|-------
+**ACCEL_FS_2**  | 0x00
+**ACCEL_FS_4**  | 0x01
+**ACCEL_FS_8**  | 0x02
+**ACCEL_FS_16** | 0x03
 
 <br />
 
