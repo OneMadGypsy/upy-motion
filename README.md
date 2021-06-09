@@ -169,7 +169,8 @@ def handler(data:tuple):
         mpu.print_from_data(data)
 
 mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
-mpu.start()
+if mpu.passed_self_test:
+    mpu.start()
 ```
 
 <br />
@@ -181,9 +182,9 @@ from mpu6050 import MPU6050
 import utime
 
 mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
-
-while True:
-    print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
-    mpu.print_data()
-    utime.sleep_ms(100)
+if mpu.passed_self_test:
+    while True:
+        print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
+        mpu.print_data()
+        utime.sleep_ms(100)
 ```
