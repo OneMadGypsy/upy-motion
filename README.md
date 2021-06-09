@@ -182,6 +182,7 @@ from mpu6050 import MPU6050
 import utime
 
 mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+
 if mpu.passed_self_test:
     while True:
         print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
