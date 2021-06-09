@@ -158,7 +158,7 @@ MPU6050(1, 6, 7)
 
 **FIFO**
 
->Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin.
+>Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin. Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script.
 
 ```python
 from mpu6050 import MPU6050
@@ -176,6 +176,7 @@ if mpu.passed_self_test:
 <br />
 
 **polling**
+>Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script.
 
 ```python
 from mpu6050 import MPU6050
