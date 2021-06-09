@@ -1,7 +1,8 @@
 # upy-motion
 
 
-A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. 
+A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion.
+
 
 ### Community:
 
