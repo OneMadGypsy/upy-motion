@@ -70,7 +70,15 @@ Arg             | Type       | Description                      | Default
 <br />
 
 **.data**
->Returns gyroscope and accelerometer data
+>Returns gyroscope and accelerometer data. This is a `namedtuple` with the following properties
+Property    | Type  |  Description
+------------|-------|-----------------
+**.acc_x**  | float | accelerometer x
+**.acc_y**  | float | accelerometer y
+**.acc_z**  | float | accelerometer z
+**.gyro_x** | float | gyroscope x
+**.gyro_y** | float | gyroscope y
+**.gyro_z** | float | gyroscope z
 
 <br />
 
