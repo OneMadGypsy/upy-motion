@@ -204,7 +204,7 @@ mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
 
 if mpu.passed_self_test:
     while True:
-        ax, ay, az, gx, gy, cz = mpu.data
+        ax, ay, az, gx, gy, gz = mpu.data
 ```
 
 
