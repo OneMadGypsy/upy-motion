@@ -155,9 +155,11 @@ Property    | Type  |  Description
 
 ## Usage
 
+All the below examples can be copy/pasted, but you must make sure to provide the `bus`, `sda` and `scl` pins (or pin numbers) that apply to your wiring scheme. If an interrupt pin or calibration offsets are used in an example, those too must be replaced with the data that applies to you.
+
 **calibration**
 
->The very first thing you should do is run the below script, with the proper `bus`, `sda` and `scl`. When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to provide an `ofs` argument will result in your device auto-calibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run calibration from a fresh power-up of the device.
+>The very first thing you should do is run the below script, When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to provide an `ofs` argument will result in your device auto-calibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run calibration from a fresh power-up of the device. If you do a good job calibrating, the numbers this returns can be used constantly, and you should not need to calibrate again.
 
 ```python
 from mpu6050 import MPU6050
@@ -168,7 +170,7 @@ MPU6050(1, 6, 7)
 
 **FIFO**
 
->Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin. Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script. The `data` argument in the handler will contain all of the accelerometer and gyroscope data.
+>Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin. The `data` argument in the handler will contain all of the accelerometer and gyroscope data.
 
 ```python
 from mpu6050 import MPU6050
@@ -186,8 +188,6 @@ if mpu.passed_self_test:
 <br />
 
 **polling**
->Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script.
-
 ```python
 from mpu6050 import MPU6050
 import utime
@@ -203,8 +203,8 @@ if mpu.passed_self_test:
 
 <br />
 
-**unpacking data**
->Make sure you replace the offsets in this example with the ones that were printed in the console when you ran the calibration script.
+**accessing data**
+>data is a `namedtuple` and can be used like any other `namedtuple`. You can either unpack the properties or use them directly. The below examples illustrate both of these methods.
 
 ```python
 from mpu6050 import MPU6050
@@ -218,7 +218,7 @@ if mpu.passed_self_test:
 ```
 
 
-_or you can use the data directly_
+_or_
 
 
 ```python
