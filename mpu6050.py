@@ -28,6 +28,7 @@ DLPF_BW_5       = const(0x06)
    
 # Data Structure
 _D   = namedtuple('D', ('acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'))
+_A   = namedtuple('K', ('roll', 'pitch'))
 
 # Data Formatting
 _SEP = '-'*60
@@ -173,7 +174,7 @@ class MPU6050(__I2CHelper):
         ax, ay, az, gx, gy, gz = self.data
         roll  = math.atan( ay / math.sqrt(ax * ax + az * az)) * _RAD2DEG
         pitch = math.atan(-ax / math.sqrt(ay * ay + az * az)) * _RAD2DEG
-        return self.__kal_x.filter(roll), self.__kal_y.filter(pitch)
+        return _A(self.__kal_x.filter(roll), self.__kal_y.filter(pitch))
      
     @property
     def connected(self) -> bool:
