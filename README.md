@@ -197,6 +197,11 @@ Field       | Type  |  Description
 
 <br />
 
+**.print_offsets()**
+>Prints the offsets as a line of code to be used as the `ofs` argument when instantiating `MPU6050`
+
+<br />
+
 -------
 
 <br />
