@@ -163,7 +163,7 @@ Field       | Type  |  Description
 <br />
 
 **.set_clock`rng:int`)**
->Sets the clock. Possible values include the following
+>Sets the clock. The default clock is `CLK_PLL_XGYRO`. Possible values include the following
 
  Const            | Value
 ------------------|-------
