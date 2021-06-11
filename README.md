@@ -1,7 +1,7 @@
 # upy-motion
 
 
-A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion.
+A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion, but it does have a Kalman filter built into the `angles` property. It is recommended that you ignore the first 20 (or so) results from the `angle` propertty to give the Kalman filter enough data to stabilize.
 
 
 ### Community:
@@ -84,6 +84,16 @@ Field       | Type  |  Description
 
 <br />
 
+**.angles**
+>Returns Kalman filtered roll and pitch angles. I would recommend dumping the first 20 (or so) results from this property to give the Kalman filter enough data to stabilize. This is a `namedtuple` with the following fields
+
+Field       | Type  |  Description
+------------|-------|-----------------
+**.roll**   | float | roll angle
+**.pitch**  | float | pitch angle
+
+<br />
+
 **.passed_self_test**
 >True or False passed system self-test
 
@@ -113,7 +123,7 @@ Field       | Type  |  Description
 
 <br />
 
-**.dlpf(`dlpf:int`)**
+**.set_dlpf(`dlpf:int`)**
 >Sets the digital low-pass filter. Possible values include the following
 
  Const          | Value
@@ -128,7 +138,7 @@ Field       | Type  |  Description
 
 <br />
 
-**.gyro(`rng:int`)**
+**.set_gyro(`rng:int`)**
 >Sets the gyroscope fullscale range. Possible values include the following
 
  Const          | Value
@@ -140,7 +150,7 @@ Field       | Type  |  Description
 
 <br />
 
-**.accel(`rng:int`)**
+**.set_accel(`rng:int`)**
 >Sets the accelerometer fullscale range. Possible values include the following
 
  Const          | Value
@@ -152,13 +162,23 @@ Field       | Type  |  Description
 
 <br />
 
-**.rate(`rate:int`)**
->Sets the sample rate. The argument can be between 1 and 255. The higher the number, the slower the sample rate
+**.set_clock`rng:int`)**
+>Sets the clock. Possible values include the following
+
+ Const            | Value
+------------------|-------
+**CLK_INTERNAL**  | 0x00
+**CLK_PLL_XGYRO** | 0x01
+**CLK_PLL_YGYRO** | 0x02
+**CLK_PLL_ZGYRO** | 0x03
+**CLK_PLL_EXT32K**| 0x04
+**CLK_PLL_EXT19M**| 0x05
+**CLK_KEEP_RESET**| 0x07
 
 <br />
 
-**.calibrate()**
->Calibrates the device and prints callibration data
+**.set_rate(`rate:int`)**
+>Sets the sample rate. The argument can be between 1 and 255. The higher the number, the slower the sample rate
 
 <br />
 
@@ -170,6 +190,10 @@ Field       | Type  |  Description
 **.print_from_data(`data:tuple`)**
 >Prints the gyroscope and accelerometer data that was passed to it
 
+<br />
+
+**.print_angles()**
+>Prints the roll and pitch angles
 
 <br />
 
