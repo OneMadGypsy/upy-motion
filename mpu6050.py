@@ -25,6 +25,16 @@ DLPF_BW_42      = const(0x03)
 DLPF_BW_20      = const(0x04)
 DLPF_BW_10      = const(0x05)
 DLPF_BW_5       = const(0x06)
+
+#clock
+CLK_INTERNAL    = const(0x00)
+CLK_PLL_XGYRO   = const(0x01)
+CLK_PLL_YGYRO   = const(0x02)
+CLK_PLL_ZGYRO   = const(0x03)
+CLK_PLL_EXT32K  = const(0x04)
+CLK_PLL_EXT19M  = const(0x05)
+CLK_KEEP_RESET  = const(0x07)
+
    
 # Data Structure
 _D   = namedtuple('D', ('acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'))
