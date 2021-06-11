@@ -302,7 +302,7 @@ if mpu.passed_self_test:
 ```
 
 
-_they have their own print method, as well_
+_just like `data`, `angles` has its own print method, as well_
 
 
 ```python
