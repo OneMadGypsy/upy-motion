@@ -193,7 +193,7 @@ Field       | Type  |  Description
 <br />
 
 **.print_angles()**
->Prints the roll and pitch angles
+>Prints the roll and pitch angles with a kalman filter automatically applied
 
 <br />
 
@@ -283,3 +283,37 @@ mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
 if mpu.passed_self_test:
     mpu.start()
 ```
+
+<br />
+
+**angles**
+>`angles` are handled no different than `data`
+
+```python
+from mpu6050 import MPU6050
+
+def handler(data:tuple):
+    if 'mpu' in globals():
+        roll, pitch = mpu.angles
+
+mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
+if mpu.passed_self_test:
+    mpu.start()
+```
+
+
+_they have their own print method, as well_
+
+
+```python
+from mpu6050 import MPU6050
+import utime
+
+mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+
+if mpu.passed_self_test:
+    while True:
+        mpu.print_angles()
+        utime.sleep_ms(100)
+```
+
