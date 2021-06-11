@@ -178,7 +178,7 @@ Field       | Type  |  Description
 <br />
 
 **.set_rate(`rate:int`)**
->Sets the sample rate. The argument can be between 1 and 255. The higher the number, the slower the sample rate
+>Sets the sample rate. The argument can be between 1 and 255.
 
 <br />
 
