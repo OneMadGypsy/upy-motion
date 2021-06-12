@@ -191,7 +191,7 @@ class MPU6050(__I2CHelper):
     def angles(self) -> tuple:
         ax, ay, az, gx, gy, gz = self.data
         z2 = az**2
-        return _A(self.__kal_r.filter(math.atan(ax/math.sqrt(ay**2+z2))*_R2D), self.__kal_p.filter(math.atan(ay/math.sqrt(ay**2+z2))*_R2D))
+        return _A(self.__kal_r.filter(math.atan(ax/math.sqrt(ay**2+z2))*_R2D), self.__kal_p.filter(math.atan(ay/math.sqrt(ax**2+z2))*_R2D))
      
     @property
     def connected(self) -> bool:
