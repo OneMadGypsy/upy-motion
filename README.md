@@ -345,7 +345,7 @@ if mpu.passed_self_test:
 ```
 
 
-_when using fifo you can tell the script to send `angles` instead of axis `data` to the handler callback by setting the `angles` constructor argument to `Truw`_
+_when using fifo you can tell the script to send `angles` instead of axis `data` to the handler callback by setting the `angles` constructor argument to `True`_
 
 
 ```python
