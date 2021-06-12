@@ -35,24 +35,26 @@ _To discus features, bugs or share your own project that utilize code in this re
 ## Docs:
 
 
-**MPU6050(`bus`, `sda`, `scl`, `intr`, `ofs`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `addr`, `freq`)**
-> Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate.
+**MPU6050(`bus`, `sda`, `scl`, `intr`, `ofs`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `filetered`, `angles`, `addr`, `freq`)**
+> Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data.
 
 
-Arg             | Type       | Description                      | Default
-----------------|------------|----------------------------------|-------------
-**bus**         | int        | I2C bus id                       | **REQUIRED**  
-**sda**         | int or Pin | data pin                         | **REQUIRED**
-**scl**         | int or Pin | clock pin                        | **REQUIRED**
-**intr**        | int or Pin | interrupt pin                    | None
-**ofs**         | tuple      | axis offsets                     | None
-**callback**    | function   | function to call on interrupt    | None
-**gyro**        | int        | gyroscope full scale range       | GYRO_FS_500
-**accel**       | int        | accelerometer full scale range   | ACCEL_FS_2
-**rate**        | int        | sample rate                      | 4
-**dlpf**        | int        | digital low-pass filter          | DLPF_BW_188
-**addr**        | int        | device I2C address               | 0x68
-**freq**        | int        | I2C frequency                    | 400000
+Arg             | Type       | Description                                    | Default
+----------------|------------|------------------------------------------------|-------------
+**bus**         | int        | I2C bus id                                     | **REQUIRED**  
+**sda**         | int or Pin | data pin                                       | **REQUIRED**
+**scl**         | int or Pin | clock pin                                      | **REQUIRED**
+**intr**        | int or Pin | interrupt pin                                  | None
+**ofs**         | tuple      | axis offsets                                   | None
+**callback**    | function   | function to call on interrupt                  | None
+**gyro**        | int        | gyroscope full scale range                     | GYRO_FS_500
+**accel**       | int        | accelerometer full scale range                 | ACCEL_FS_2
+**rate**        | int        | sample rate                                    | 4
+**dlpf**        | int        | digital low-pass filter                        | DLPF_BW_188
+**filtered**    | int        | apply Kalman filters to `data`                 | False
+**angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
+**addr**        | int        | device I2C address                             | 0x68
+**freq**        | int        | I2C frequency                                  | 400000
 
 <br />
 
@@ -197,8 +199,28 @@ Field       | Type  |  Description
 
 <br />
 
+**.print_from_angles(`angles:tuple`)**
+>Prints the angle data that was passed to it
+
+<br />
+
+**.print_celsius()**
+>Prints the temperature in celsius
+
+<br />
+
+**.print_fahrenheit()**
+>Prints the temperature in fahrenheit
+
+<br />
+
 **.print_offsets()**
 >Prints the offsets as a line of code to be used as the `ofs` argument when instantiating `MPU6050`
+
+<br />
+
+**.print_all()**
+>Prints everything except offsets
 
 <br />
 
