@@ -253,6 +253,10 @@ class MPU6050(__I2CHelper):
         utime.sleep_ms(100)                 #a moment to stabilize
         for _ in range(100): self.angles    #this primes the Kalman filters
         
+        self.__time  = utime.ticks_us()
+        self.__delta = utime.ticks_diff(utime.ticks_us(), self.__time)/1000000
+        self.__cx, self.__cy = self.angles
+        
         if isinstance(ofs, tuple):
             self.__set_offsets(*ofs) if (len(ofs) == 6) else self.__calibrate(6)
         else:
@@ -268,6 +272,24 @@ class MPU6050(__I2CHelper):
             
     #__>        PUBLIC METHODS       <__#
     
+    #COMPLIMENTARY FILTER_>
+    def get_complimentary(self, alpha:float=.2, samples:int=5) -> tuple:
+        samples = max(1, samples)
+        cx, cy  = [0.00]*samples, [0.00]*samples
+        for s in range(samples):
+            ax, ay, az, gx, gy, gz = self.data
+            self.__delta = utime.ticks_diff(utime.ticks_us(), self.__time)/1000000
+            self.__time  = utime.ticks_us()
+            xrate, yrate = (gx / 131.0), (gy / 131.0)
+            roll  = math.atan(ax/math.sqrt(ay**2+az**2))*_R2D
+            pitch = math.atan(ay/math.sqrt(ax**2+az**2))*_R2D
+            cx[s] = (1-alpha) * (self.__cx + xrate * self.__delta) + alpha * roll
+            cy[s] = (1-alpha) * (self.__cy + yrate * self.__delta) + alpha * pitch
+            utime.sleep_us(100)
+        self.__cx = sum(cx)/samples
+        self.__cy = sum(cy)/samples
+        return _A(self.__cx, self.__cy)
+        
     #INTERRUPT CONTROL____>
     def start(self) -> None:
         if not self.__usefifo is None:
