@@ -1,7 +1,7 @@
 # upy-motion
 
 
-A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion, but it does have a Kalman filter built into the `angles` property. It is recommended that you ignore the first 20 (or so) results from the `angle` propertty to give the Kalman filter enough data to stabilize.
+A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion, but it does have a Kalman filter built in. The Kalman filter is automatically applied to the angle property, but (through a constructor argument) it can be applied to the raw accelerometer and gyroscope data, as well.
 
 
 ### Community:
@@ -87,7 +87,7 @@ Field       | Type  |  Description
 <br />
 
 **.angles**
->Returns Kalman filtered roll and pitch angles. I would recommend dumping the first 20 (or so) results from this property to give the Kalman filter enough data to stabilize. This is a `namedtuple` with the following fields
+>Returns Kalman filtered roll and pitch angles. This is a `namedtuple` with the following fields
 
 Field       | Type  |  Description
 ------------|-------|-----------------
@@ -344,3 +344,19 @@ if mpu.passed_self_test:
         utime.sleep_ms(100)
 ```
 
+
+_when using fifo you can tell the script to send `angles` instead of axis `data` to the handler callback by setting the `angles` constructor argument to `Truw`_
+
+
+```python
+from mpu6050 import MPU6050
+
+def handler(data:tuple):
+    if 'mpu' in globals():
+        roll, pitch = data
+        mpu.print_from_angles(data)
+
+mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler, angles=True)
+if mpu.passed_self_test:
+    mpu.start()
+```
