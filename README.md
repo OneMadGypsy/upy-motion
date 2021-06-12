@@ -184,6 +184,16 @@ Field       | Type  |  Description
 
 <br />
 
+**.get_complimentary(`alpha`, `samples`)**
+>Returns angle data which has been processed through a complimentary filter
+
+Field        | Type  |  Description                                                     | Default
+-------------|-------|------------------------------------------------------------------|---------
+**alpha**    | float | percent of accel data to use, 1-alpha is percent of gyro to use  | .8
+**samples**  | int   | number of samples to take                                        | 5
+
+<br />
+
 **.print_data()**
 >Prints the gyroscope and accelerometer data
 
@@ -344,7 +354,6 @@ if mpu.passed_self_test:
         utime.sleep_ms(100)
 ```
 
-
 _when using fifo you can tell the script to send `angles` instead of axis `data` to the handler callback by setting the `angles` constructor argument to `True`_
 
 
@@ -359,4 +368,22 @@ def handler(data:tuple):
 mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler, angles=True)
 if mpu.passed_self_test:
     mpu.start()
+```
+
+_when polling you can get angles from a complimentary filter instead of a Kalman_
+
+>Using the values shown in `get_complimentary()` below, roll and pitch will be returned with 88% of their values set from the accelerometer and 12% of their values set from the gyroscope. The final data will be the average of 10 samples.
+
+
+```python
+from mpu6050 import MPU6050
+import utime
+
+mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+
+if mpu.passed_self_test:
+    while True:
+        angles = mpu.get_complimentary(.88, 10)
+        mpu.print_from_angles(angles)
+        utime.sleep_ms(100)
 ```
