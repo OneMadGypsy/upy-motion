@@ -3,7 +3,7 @@ from micropython import const
 from collections import namedtuple
 import struct, utime, math
 
-_RAD2DEG        = 180/math.pi
+_R2D            = 180/math.pi
 
 #accel
 ACCEL_FS_2      = const(0x00)
@@ -177,14 +177,21 @@ class MPU6050(__I2CHelper):
             gy = data[5] * self.__gyrofact
             gz = data[6] * self.__gyrofact
             
+        if self.__filtered:
+            ax = self.__kal_ax.filter(ax)
+            ay = self.__kal_ay.filter(ay)
+            az = self.__kal_az.filter(az)
+            gx = self.__kal_gx.filter(gx)
+            gy = self.__kal_gy.filter(gy)
+            gz = self.__kal_gz.filter(gz)
+            
         return _D(ax, ay, az, gx, gy, gz)
-     
+            
     @property
     def angles(self) -> tuple:
         ax, ay, az, gx, gy, gz = self.data
-        roll  = math.atan( ay / math.sqrt(ax * ax + az * az)) * _RAD2DEG
-        pitch = math.atan(-ax / math.sqrt(ay * ay + az * az)) * _RAD2DEG
-        return _A(self.__kal_x.filter(roll), self.__kal_y.filter(pitch))
+        z2 = az**2
+        return _A(self.__kal_r.filter(math.atan(ax/math.sqrt(ay**2+z2))*_R2D), self.__kal_p.filter(math.atan(ay/math.sqrt(ax**2+z2))*_R2D))
      
     @property
     def connected(self) -> bool:
@@ -217,13 +224,20 @@ class MPU6050(__I2CHelper):
         return self.celsius * 1.8 + 32    
         
     #__> CONSTRUCTOR
-    def __init__(self, bus:int, sda, scl, intr=None, ofs:tuple=None, callback=None, gyro:int=GYRO_FS_500, accel:int=ACCEL_FS_2, rate:int=4, dlpf:int=DLPF_BW_188, addr:int=0x68, freq:int=400000) -> None:
+    def __init__(self, bus:int, sda, scl, intr=None, ofs:tuple=None, callback=None, gyro:int=GYRO_FS_500, accel:int=ACCEL_FS_2, rate:int=4, dlpf:int=DLPF_BW_188, filtered:bool=False, angles:bool=False, addr:int=0x68, freq:int=400000) -> None:
         super().__init__(bus, sda, scl, addr, freq)
         self.__accsense , self.__accfact , self.__accfs   = 0, 0, accel
         self.__gyrosense, self.__gyrofact, self.__gyrofs  = 0, 0, gyro
         self.__rate     , self.__dlpf                     = rate, dlpf
         self.__intr     , self.__usefifo                  = None, False
-        self.__kal_x    , self.__kal_y                    = Kalman(0.003, 0.1), Kalman(0.003, 0.1)
+        self.__kal_r    , self.__kal_p                    = Kalman(0.05, 0.05), Kalman(0.05, 0.05)
+        self.__kal_gx   , self.__kal_gy, self.__kal_gz    = None, None, None 
+        self.__kal_ax   , self.__kal_ay, self.__kal_az    = None, None, None
+        self.__useangles, self.__filtered                 = angles, filtered
+        
+        if filtered:
+            self.__kal_gx, self.__kal_gy, self.__kal_gz   = Kalman(0.05, 0.05), Kalman(0.05, 0.05), Kalman(0.05, 0.05)
+            self.__kal_ax, self.__kal_ay, self.__kal_az   = Kalman(0.05, 0.05), Kalman(0.05, 0.05), Kalman(0.05, 0.05)
         
         self.__enable_interrupts(False)
         self.__enable_fifo (False)
@@ -236,7 +250,8 @@ class MPU6050(__I2CHelper):
         self.set_rate (rate )
         self.set_dlpf (dlpf )
         
-        utime.sleep_ms(100)              #a moment to stabilize
+        utime.sleep_ms(100)                 #a moment to stabilize
+        for _ in range(100): self.angles    #this primes the Kalman filters
         
         if isinstance(ofs, tuple):
             self.__set_offsets(*ofs) if (len(ofs) == 6) else self.__calibrate(6)
@@ -250,8 +265,6 @@ class MPU6050(__I2CHelper):
             self.__usefifo  = True
             self.__reset_fifo()
             self.__enable_fifo(True)
-            
-        self.angles
             
     #__>        PUBLIC METHODS       <__#
     
@@ -300,7 +313,23 @@ class MPU6050(__I2CHelper):
         print(_C.format(a, g, _SEP))
       
     def print_angles(self) -> None:
-        print('roll: {:<10}, pitch: {:<10}'.format(*self.angles))  
+        self.print_from_angles(self.angles[0:2]) 
+        
+    def print_from_angles(self, angles:tuple) -> None:
+        r, p = angles[0:2]
+        print('[{:<16}] roll: {}{:<10.2f} pitch: {}{:<10.2f}'.format('ANGLES', _W[r<0], abs(r), _W[p<0], abs(p)))
+         
+    def print_celsius(self) -> None:
+        print('[{:<16}] {:>6.2f} C'.format('TEMPERATURE', self.celsius)) 
+        
+    def print_fahrenheit(self) -> None:
+        print('[{:<16}] {:>6.2f} F'.format('TEMPERATURE', self.fahrenheit)) 
+        
+    def print_all(self):
+        self.print_celsius()
+        self.print_fahrenheit()
+        self.print_angles()
+        self.print_data()
         
     #__>        PRIVATE PROPERTIES     <__#
 
@@ -341,8 +370,14 @@ class MPU6050(__I2CHelper):
     #__>        PRIVATE METHODS     <__#
     
     #MISC_________________>
+    def __map(self, x:int, in_min:int, in_max:int, out_min:int, out_max:int) -> int:
+        return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+    
     def __handler(self, pin:Pin) -> None:           #interrupt handler
         if (not self.__intr is None) and (not self.__callback is None):
+            if self.__useangles:
+                self.__callback(self.angles)
+                return
             self.__callback(self.data)
             
     def __enable_sleep(self, e:bool) -> None:
