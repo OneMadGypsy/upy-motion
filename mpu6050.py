@@ -4,6 +4,21 @@ from collections import namedtuple
 import struct, utime, math
 
 _R2D            = 180/math.pi
+_R              = 0.003
+_Q              = 0.01
+
+NONE            = const(0x00)
+
+#filter type flags
+ANGLE_KAL       = const(0x01)
+ANGLE_COMP      = const(0x02)
+ANGLE_BOTH      = const(0x03)
+
+#filter 'which' flags
+FILTER_ACCEL    = const(0x01)
+FILTER_GYRO     = const(0x02)
+FILTER_ANGLES   = const(0x04)
+FILTER_ALL      = const(0x07)
 
 #accel
 ACCEL_FS_2      = const(0x00)
@@ -123,26 +138,40 @@ class __I2CHelper(object):
 
 
 #__> Kalman Filter
-class Kalman(object):
-    def __init__(self, R, Q):
+class __Filters(object):
+    def __init__(self, R:float, Q:float, alpha:float) -> None:
         self.__cov = float('nan')
         self.__x   = float('nan')
+        self.__c   = float('nan')
         self.__A, self.__B, self.__C = 1, 0, 1
         self.__R, self.__Q = R, Q
+        
+        self.__alpha = alpha
+        self.__time  = utime.ticks_us()
+        self.__delta = utime.ticks_diff(utime.ticks_us(), self.__time)/1000000
 
-    def filter(self, m:float):
+    def kalman(self, angle:float) -> float:
         u = 0
         if math.isnan(self.__x):
-            self.__x   = (1 / self.__C) * m
+            self.__x   = (1 / self.__C) * angle
             self.__cov = (1 / self.__C) * self.__Q * (1 / self.__C)
         else:
             px         = (self.__A * self.__x) + (self.__B * u)
             pc         = ((self.__A * self.__cov) * self.__A) + self.__R
             K          = pc * self.__C * (1 / ((self.__C * pc * self.__C) + self.__Q))
-            self.__x   = px + K * (m - (self.__C * px))
+            self.__x   = px + K * (angle - (self.__C * px))
             self.__cov = pc - (K * self.__C * pc)
 
         return self.__x
+        
+    def complementary(self, rate:float, angle:float) -> float:
+        if math.isnan(self.__c):
+            self.__c = angle
+            
+        self.__delta = utime.ticks_diff(utime.ticks_us(), self.__time)/1000000
+        self.__time  = utime.ticks_us()
+        self.__c     = (1-self.__alpha) * (self.__c + rate * self.__delta) + self.__alpha * angle
+        return self.__c
 
 
 #__> MPU6050
@@ -177,21 +206,30 @@ class MPU6050(__I2CHelper):
             gy = data[5] * self.__gyrofact
             gz = data[6] * self.__gyrofact
             
-        if self.__filtered:
-            ax = self.__kal_ax.filter(ax)
-            ay = self.__kal_ay.filter(ay)
-            az = self.__kal_az.filter(az)
-            gx = self.__kal_gx.filter(gx)
-            gy = self.__kal_gy.filter(gy)
-            gz = self.__kal_gz.filter(gz)
+        if self.__filtered & (FILTER_GYRO | FILTER_ACCEL):
+           if self.__filtered & FILTER_GYRO:
+               gx = self.__fil_gx.kalman(gx)
+               gy = self.__fil_gy.kalman(gy)
+               gz = self.__fil_gz.kalman(gz)
+                   
+           if self.__filtered & FILTER_ACCEL:
+               ax = self.__fil_ax.kalman(ax)
+               ay = self.__fil_ay.kalman(ay)
+               az = self.__fil_az.kalman(az)
             
         return _D(ax, ay, az, gx, gy, gz)
             
     @property
     def angles(self) -> tuple:
+        if (self.__aftype & ANGLE_BOTH) and (self.__filtered & FILTER_ANGLES):
+            return self.__filtered_angles()
+            
         ax, ay, az, gx, gy, gz = self.data
-        z2 = az**2
-        return _A(self.__kal_r.filter(math.atan(ax/math.sqrt(ay**2+z2))*_R2D), self.__kal_p.filter(math.atan(ay/math.sqrt(ax**2+z2))*_R2D))
+        z2    = az**2
+        roll  = math.atan(ax/math.sqrt(ay**2+z2))*_R2D
+        pitch = math.atan(ay/math.sqrt(ax**2+z2))*_R2D
+                
+        return _A(roll, pitch)
      
     @property
     def connected(self) -> bool:
@@ -224,20 +262,23 @@ class MPU6050(__I2CHelper):
         return self.celsius * 1.8 + 32    
         
     #__> CONSTRUCTOR
-    def __init__(self, bus:int, sda, scl, intr=None, ofs:tuple=None, callback=None, gyro:int=GYRO_FS_500, accel:int=ACCEL_FS_2, rate:int=4, dlpf:int=DLPF_BW_188, filtered:bool=False, angles:bool=False, addr:int=0x68, freq:int=400000) -> None:
+    def __init__(self, bus:int, sda, scl, ofs:tuple=None, intr=None, callback=None, gyro:int=GYRO_FS_500, accel:int=ACCEL_FS_2, rate:int=4, dlpf:int=DLPF_BW_188, filtered:int=NONE, anglefilter:int=NONE, R:float=0.003, Q:float=0.001, A:float=0.8, angles:bool=False, addr:int=0x68, freq:int=400000) -> None:
         super().__init__(bus, sda, scl, addr, freq)
         self.__accsense , self.__accfact , self.__accfs   = 0, 0, accel
         self.__gyrosense, self.__gyrofact, self.__gyrofs  = 0, 0, gyro
         self.__rate     , self.__dlpf                     = rate, dlpf
         self.__intr     , self.__usefifo                  = None, False
-        self.__kal_r    , self.__kal_p                    = Kalman(0.05, 0.05), Kalman(0.05, 0.05)
-        self.__kal_gx   , self.__kal_gy, self.__kal_gz    = None, None, None 
-        self.__kal_ax   , self.__kal_ay, self.__kal_az    = None, None, None
-        self.__useangles, self.__filtered                 = angles, filtered
+        self.__fil_r    , self.__fil_p                    = None, None
+        self.__fil_gx   , self.__fil_gy, self.__fil_gz    = None, None, None 
+        self.__fil_ax   , self.__fil_ay, self.__fil_az    = None, None, None
+        self.__useangles, self.__filtered, self.__aftype  = angles, filtered, anglefilter
         
-        if filtered:
-            self.__kal_gx, self.__kal_gy, self.__kal_gz   = Kalman(0.05, 0.05), Kalman(0.05, 0.05), Kalman(0.05, 0.05)
-            self.__kal_ax, self.__kal_ay, self.__kal_az   = Kalman(0.05, 0.05), Kalman(0.05, 0.05), Kalman(0.05, 0.05)
+        if filtered & FILTER_ANGLES:
+            self.__fil_r , self.__fil_p                   = __Filters(R, Q, A), __Filters(R, Q, A)
+        if filtered & FILTER_GYRO:
+            self.__fil_gx, self.__fil_gy, self.__fil_gz   = __Filters(R, Q, A), __Filters(R, Q, A), __Filters(R, Q, A)
+        if filtered & FILTER_ACCEL:
+            self.__fil_ax, self.__fil_ay, self.__fil_az   = __Filters(R, Q, A), __Filters(R, Q, A), __Filters(R, Q, A)
         
         self.__enable_interrupts(False)
         self.__enable_fifo (False)
@@ -251,7 +292,7 @@ class MPU6050(__I2CHelper):
         self.set_dlpf (dlpf )
         
         utime.sleep_ms(100)                 #a moment to stabilize
-        for _ in range(100): self.angles    #this primes the Kalman filters
+        for _ in range(20): self.angles    #this primes the Kalman filters
         
         self.__time  = utime.ticks_us()
         self.__delta = utime.ticks_diff(utime.ticks_us(), self.__time)/1000000
@@ -272,24 +313,6 @@ class MPU6050(__I2CHelper):
             
     #__>        PUBLIC METHODS       <__#
     
-    #COMPLIMENTARY FILTER_>
-    def get_complimentary(self, alpha:float=.2, samples:int=5) -> tuple:
-        samples = max(1, samples)
-        cx, cy  = [0.00]*samples, [0.00]*samples
-        for s in range(samples):
-            ax, ay, az, gx, gy, gz = self.data
-            self.__delta = utime.ticks_diff(utime.ticks_us(), self.__time)/1000000
-            self.__time  = utime.ticks_us()
-            xrate, yrate = (gx / 131.0), (gy / 131.0)
-            roll  = math.atan(ax/math.sqrt(ay**2+az**2))*_R2D
-            pitch = math.atan(ay/math.sqrt(ax**2+az**2))*_R2D
-            cx[s] = (1-alpha) * (self.__cx + xrate * self.__delta) + alpha * roll
-            cy[s] = (1-alpha) * (self.__cy + yrate * self.__delta) + alpha * pitch
-            utime.sleep_us(100)
-        self.__cx = sum(cx)/samples
-        self.__cy = sum(cy)/samples
-        return _A(self.__cx, self.__cy)
-        
     #INTERRUPT CONTROL____>
     def start(self) -> None:
         if not self.__usefifo is None:
@@ -392,16 +415,34 @@ class MPU6050(__I2CHelper):
     #__>        PRIVATE METHODS     <__#
     
     #MISC_________________>
-    def __map(self, x:int, in_min:int, in_max:int, out_min:int, out_max:int) -> int:
-        return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
-    
     def __handler(self, pin:Pin) -> None:           #interrupt handler
         if (not self.__intr is None) and (not self.__callback is None):
             if self.__useangles:
                 self.__callback(self.angles)
                 return
             self.__callback(self.data)
-            
+           
+    def __filtered_angles(self):                    #manages all angle filtering
+        smps   = self.__rate//2
+        fx, fy = [0.00]*(smps), [0.00]*(smps)
+        for s in range(smps):
+            ax, ay, az, gx, gy, gz = self.data
+            z2    = az**2
+            roll  = math.atan(ax/math.sqrt(ay**2+z2))*_R2D
+            pitch = math.atan(ay/math.sqrt(ax**2+z2))*_R2D
+            if self.__aftype & ANGLE_KAL:
+                roll  = self.__fil_r.kalman(roll)
+                pitch = self.__fil_p.kalman(pitch)
+            if self.__aftype & ANGLE_COMP:
+                roll  = self.__fil_r.complementary(gx/133, roll )
+                pitch = self.__fil_p.complementary(gy/133, pitch)
+            fx[s], fy[s] = roll, pitch
+            utime.sleep_us(100)
+        roll  = sum(fx)/smps
+        pitch = sum(fy)/smps
+        
+        return _A(roll, pitch)
+             
     def __enable_sleep(self, e:bool) -> None:
         self.__writeBit(0x6b, 0x6, e)
        
