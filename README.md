@@ -53,7 +53,7 @@ Arg             | Type       | Description                                    | 
 **dlpf**        | int        | digital low-pass filter                        | DLPF_BW_188
 **filtered**    | int        | which properties to filter                     | NONE
 **anglefilter** | int        | which filters to apply to angles               | NONE
-**R**           | float      | Kalman filter mean                             | 0.003
+**R**           | float      | Kalman filter measure                          | 0.003
 **Q**           | float      | Kalman filter bias                             | 0.001
 **A**           | float      | complimentary filter alpha                     | .8
 **angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
