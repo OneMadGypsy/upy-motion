@@ -55,7 +55,7 @@ Arg             | Type       | Description                                    | 
 **anglefilter** | int        | which filters to apply to angles               | NONE
 **R**           | float      | Kalman filter measure                          | 0.003
 **Q**           | float      | Kalman filter bias                             | 0.001
-**A**           | float      | complimentary filter alpha                     | .8
+**A**           | float      | complementary filter alpha                     | .8
 **angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
 **addr**        | int        | device I2C address                             | 0x68
 **freq**        | int        | I2C frequency                                  | 400000
