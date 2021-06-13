@@ -44,14 +44,18 @@ Arg             | Type       | Description                                    | 
 **bus**         | int        | I2C bus id                                     | **REQUIRED**  
 **sda**         | int or Pin | data pin                                       | **REQUIRED**
 **scl**         | int or Pin | clock pin                                      | **REQUIRED**
-**intr**        | int or Pin | interrupt pin                                  | None
 **ofs**         | tuple      | axis offsets                                   | None
+**intr**        | int or Pin | interrupt pin                                  | None
 **callback**    | function   | function to call on interrupt                  | None
 **gyro**        | int        | gyroscope full scale range                     | GYRO_FS_500
 **accel**       | int        | accelerometer full scale range                 | ACCEL_FS_2
 **rate**        | int        | sample rate                                    | 4
 **dlpf**        | int        | digital low-pass filter                        | DLPF_BW_188
-**filtered**    | int        | apply Kalman filters to `data`                 | False
+**filtered**    | int        | which properties to filter                     | NONE
+**anglefilter** | int        | which filters to apply to angles               | NONE
+**R**           | float      | Kalman filter mean                             | 0.003
+**Q**           | float      | Kalman filter bias                             | 0.001
+**A**           | float      | complimentary filter alpha                     | .8
 **angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
 **addr**        | int        | device I2C address                             | 0x68
 **freq**        | int        | I2C frequency                                  | 400000
@@ -184,16 +188,6 @@ Field       | Type  |  Description
 
 <br />
 
-**.get_complimentary(`alpha`, `samples`)**
->Returns angle data which has been processed through a complimentary filter
-
-Field        | Type  |  Description                                                     | Default
--------------|-------|------------------------------------------------------------------|---------
-**alpha**    | float | percent of accel data to use, 1-alpha is percent of gyro to use  | .8
-**samples**  | int   | number of samples to take                                        | 5
-
-<br />
-
 **.print_data()**
 >Prints the gyroscope and accelerometer data
 
@@ -267,7 +261,7 @@ def handler(data:tuple):
         print('[{:<16}] {:<10.2f}'.format('TEMPERATURE', mpu.fahrenheit))
         mpu.print_from_data(data)
 
-mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51), 2, handler)
 if mpu.passed_self_test:
     mpu.start()
 ```
@@ -316,7 +310,7 @@ def handler(data:tuple):
         asum = data.acc_x  + data.acc_y  + data.acc_z
         gsum = data.gyro_x + data.gyro_y + data.gyro_z
 
-mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51), 2, handler)
 if mpu.passed_self_test:
     mpu.start()
 ```
@@ -333,7 +327,7 @@ def handler(data:tuple):
     if 'mpu' in globals():
         roll, pitch = mpu.angles
 
-mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler)
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51), 2, handler)
 if mpu.passed_self_test:
     mpu.start()
 ```
@@ -368,22 +362,59 @@ def handler(data:tuple):
 mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler, angles=True)
 if mpu.passed_self_test:
     mpu.start()
+
 ```
 
-_when polling you can get angles from a complimentary filter instead of a Kalman_
+<br />
 
->Using the values shown in `get_complimentary()` below, roll and pitch will be returned with 88% of their values set from the accelerometer and 12% of their values set from the gyroscope. The final data will be the average of 10 samples.
+**filters**
+>This driver supports 2 different types of filters (Kalman and complementary). Complimentary filters can only be applied to angles. If a complementary filter is flagged on angles it will return the average of all the samples taken. The amount of samples that are taken will be half of the `rate` argument that was supplied to the constructor.
 
+<br />
+
+>Applying filters to various pieces of data can be done with the below flags
+
+Flag             | Value
+-----------------|-------
+**NONE**         | 0x00
+**FILTER_ACCEL** | 0x01
+**FILTER_GYRO**  | 0x02
+**FILTER_ANGLES**| 0x04
+**FILTER_ALL**   | 0x07
+
+
+<br />
+
+>Determining which filters are applied to angles can be done with the following flags
+
+ 
+Flag             | Value
+-----------------|-------
+**NONE**         | 0x00
+**ANGLE_KAL**    | 0x01
+**ANGLE_COMP**   | 0x02
+**ANGLE_BOTH**   | 0x03
+
+<br />
+
+**filter example**
 
 ```python
-from mpu6050 import MPU6050
-import utime
+from mpu6050 import MPU6050, FILTER_GYRO, FILTER_ANGLES, ANGLE_COMP
 
-mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+def handler(data:tuple):
+    if 'mpu' in globals():
+        mpu.print_from_angles(data)
+        
+cfg = dict(
+    rate        = 20,                          #MPU6050_SPLRTDIV ~ half of this will be comp filter samples
+    filtered    = FILTER_GYRO | FILTER_ANGLES, #wont filter accelerometer raw readings
+    anglefilter = ANGLE_COMP,                  #only apply complimentary filter to angles
+    angles      = True                         #send data to handler as angles
+)
+mpu = MPU6050(1, 6, 7, (1368, -1684, 416, 20, -6, 49), 2, handler, **cfg)
 
 if mpu.passed_self_test:
-    while True:
-        angles = mpu.get_complimentary(.88, 10)
-        mpu.print_from_angles(angles)
-        utime.sleep_ms(100)
+    mpu.start()
+
 ```
