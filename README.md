@@ -407,7 +407,7 @@ def handler(data:tuple):
         mpu.print_from_angles(data)
         
 cfg = dict(
-    rate        = 20,                          #MPU6050_SPLRTDIV ~ half of this will be comp filter samples
+    rate        = 20,                          #MPU6050_SPLRTDIV ~ comp filter samples at half of this number
     filtered    = FILTER_GYRO | FILTER_ANGLES, #wont filter accelerometer raw readings
     anglefilter = ANGLE_COMP,                  #apply only complimentary filter to angles
     angles      = True                         #send data to handler as angles
