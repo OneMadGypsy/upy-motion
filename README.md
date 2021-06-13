@@ -409,7 +409,7 @@ def handler(data:tuple):
 cfg = dict(
     rate        = 20,                          #MPU6050_SPLRTDIV ~ half of this will be comp filter samples
     filtered    = FILTER_GYRO | FILTER_ANGLES, #wont filter accelerometer raw readings
-    anglefilter = ANGLE_COMP,                  #only apply complimentary filter to angles
+    anglefilter = ANGLE_COMP,                  #apply only complimentary filter to angles
     angles      = True                         #send data to handler as angles
 )
 mpu = MPU6050(1, 6, 7, (1368, -1684, 416, 20, -6, 49), 2, handler, **cfg)
