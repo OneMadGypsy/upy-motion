@@ -35,7 +35,7 @@ _To discus features, bugs or share your own project that utilize code in this re
 ## Docs:
 
 
-**MPU6050(`bus`, `sda`, `scl`, `intr`, `ofs`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `filetered`, `angles`, `addr`, `freq`)**
+**MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `filetered`, `anglefilter`, `R`, `Q`, `A`, `angles`, `addr`, `freq`)**
 > Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data.
 
 
