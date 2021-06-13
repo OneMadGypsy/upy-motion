@@ -368,7 +368,7 @@ if mpu.passed_self_test:
 <br />
 
 **filters**
->This driver supports 2 different types of filters (Kalman and complementary). Complimentary filters can only be applied to angles. If a complementary filter is flagged on angles it will return the average of all the samples taken. The amount of samples that are taken will be half of the `rate` argument that was supplied to the constructor.
+>This driver supports 2 different types of filters (Kalman and complementary). Complementary filters can only be applied to angles. If a complementary filter is flagged on angles it will return the average of all the samples taken. The amount of samples that are taken will be half of the `rate` argument that was supplied to the constructor.
 
 <br />
 
@@ -409,7 +409,7 @@ def handler(data:tuple):
 cfg = dict(
     rate        = 20,                          #MPU6050_SPLRTDIV ~ comp filter samples at half of this number
     filtered    = FILTER_GYRO | FILTER_ANGLES, #wont filter accelerometer raw readings
-    anglefilter = ANGLE_COMP,                  #apply only complimentary filter to angles
+    anglefilter = ANGLE_COMP,                  #apply only complementary filter to angles
     angles      = True                         #send data to handler as angles
 )
 mpu = MPU6050(1, 6, 7, (1368, -1684, 416, 20, -6, 49), 2, handler, **cfg)
