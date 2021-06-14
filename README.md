@@ -405,7 +405,7 @@ def handler(data:tuple):
         roll, pitch = data
         mpu.print_from_angles(data)
 
-mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51), 2, handler, angles=True)
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51), 2, handler, True)
 if mpu.passed_self_test:
     mpu.start()
 
