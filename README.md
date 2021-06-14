@@ -36,7 +36,8 @@ _To discus features, bugs or share your own project that utilize code in this re
 
 
 **MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `angles`, `addr`, `freq`)**
-> Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data.
+
+> Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data. The `rate` argument is the amount to divide the gyroscope output rate by. The argument can be between 1 and 255. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
 
 
 Arg             | Type       | Description                                    | Default
@@ -47,6 +48,7 @@ Arg             | Type       | Description                                    | 
 **ofs**         | tuple      | axis offsets                                   | None
 **intr**        | int or Pin | interrupt pin                                  | None
 **callback**    | function   | function to call on interrupt                  | None
+**clock**       | int        | gyroscope full scale range                     | CLK_PLL_XGYRO
 **gyro**        | int        | gyroscope full scale range                     | GYRO_FS_500
 **accel**       | int        | accelerometer full scale range                 | ACCEL_FS_2
 **rate**        | int        | sample rate                                    | 4
@@ -59,6 +61,93 @@ Arg             | Type       | Description                                    | 
 **angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
 **addr**        | int        | device I2C address                             | 0x68
 **freq**        | int        | I2C frequency                                  | 400000
+
+<br />
+
+### Constants:
+
+<br />
+
+#### clock
+>Possible values for the `clock` constructor argument are the following. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. Possible values include the following
+
+ Const            | Value
+------------------|-------
+**CLK_INTERNAL**  | 0x00
+**CLK_PLL_XGYRO** | 0x01
+**CLK_PLL_YGYRO** | 0x02
+**CLK_PLL_ZGYRO** | 0x03
+**CLK_PLL_EXT32K**| 0x04
+**CLK_PLL_EXT19M**| 0x05
+**CLK_KEEP_RESET**| 0x07
+
+<br />
+
+#### gyro
+>Possible values for the `gyro` constructor argument are the following. The default gyro is `GYRO_FS_500`. The documents recommend that you use either a gyro or external clock for the best stability.
+
+ Const          | Value
+----------------|-------
+**GYRO_FS_250** | 0x00
+**GYRO_FS_500** | 0x01
+**GYRO_FS_1000**| 0x02
+**GYRO_FS_2000**| 0x03
+
+<br />
+
+#### accel
+>Possible values for the `accel` constructor argument are the following. The default accel is `ACCEL_FS_2`
+
+ Const          | Value
+----------------|-------
+**ACCEL_FS_2**  | 0x00
+**ACCEL_FS_4**  | 0x01
+**ACCEL_FS_8**  | 0x02
+**ACCEL_FS_16** | 0x03
+
+<br />
+
+#### dlpf
+>Possible values for the `dlpf` constructor argument include the following. The default dlpf is `DLPF_BW_188`. Headers marked **ms** below represent the milliseconds of delay a DLPF will create.
+
+Const          | Value | Accel(ms) | Gyro(ms) | FS (Khz)
+----------------|-------|-----------|----------|---------
+**DLPF_BW_256** | 0x00  | 0         |  0.98    | 8
+**DLPF_BW_188** | 0x01  | 2.0       |  1.9     | 1
+**DLPF_BW_98**  | 0x02  | 3.0       |  2.8     | 1
+**DLPF_BW_42**  | 0x03  | 4.9       |  4.8     | 1
+**DLPF_BW_20**  | 0x04  | 8.5       |  8.3     | 1
+**DLPF_BW_10**  | 0x05  | 13.8      | 13.4     | 1
+**DLPF_BW_5**   | 0x06  | 19.0      | 18.6     | 1
+
+<br />
+
+#### filtered
+>Possible values for the `filtered` constructor argument include the following. The default filter is `NONE`. Applying one or more of these flags tells the driver which data to filter. For accel and gyro Kalman filters will be applied. For angles another flag must be used to determine which filters you want applied.
+
+Flag             | Value
+-----------------|-------
+**NONE**         | 0x00
+**FILTER_ACCEL** | 0x01
+**FILTER_GYRO**  | 0x02
+**FILTER_ANGLES**| 0x04
+**FILTER_ALL**   | 0x07
+
+<br />
+
+#### anglefilter
+>Possible values for the `anglefilter` constructor argument include the following. The default anglefilter is `NONE`. 
+
+Flag             | Value
+-----------------|-------
+**NONE**         | 0x00
+**ANGLE_KAL**    | 0x01
+**ANGLE_COMP**   | 0x02
+**ANGLE_BOTH**   | 0x03
+
+<br />
+
+-----------------
 
 <br />
 
@@ -115,6 +204,10 @@ Field       | Type  |  Description
 
 <br />
 
+-----------------
+
+<br />
+
 ### Methods:
 
 <br />
@@ -126,65 +219,6 @@ Field       | Type  |  Description
 
 **.stop()**
 >If an interrupt pin and callback were supplied to the constructor, this will stop FIFO interrupts
-
-<br />
-
-**.set_dlpf(`dlpf:int`)**
->Sets the digital low-pass filter. Possible values include the following
-
- Const          | Value | Accel(ms) | Gyro (ms) | FS (Khz)
-----------------|-------|-----------|-----------|---------
-**DLPF_BW_256** | 0x00  | 0         |  0.98     | 8
-**DLPF_BW_188** | 0x01  | 2.0       |  1.9      | 1
-**DLPF_BW_98**  | 0x02  | 3.0       |  2.8      | 1
-**DLPF_BW_42**  | 0x03  | 4.9       |  4.8      | 1
-**DLPF_BW_20**  | 0x04  | 8.5       |  8.3      | 1
-**DLPF_BW_10**  | 0x05  | 13.8      | 13.4      | 1
-**DLPF_BW_5**   | 0x06  | 19.0      | 18.6      | 1
-
-<br />
-
-**.set_gyro(`rng:int`)**
->Sets the gyroscope fullscale range. Possible values include the following
-
- Const          | Value
-----------------|-------
-**GYRO_FS_250** | 0x00
-**GYRO_FS_500** | 0x01
-**GYRO_FS_1000**| 0x02
-**GYRO_FS_2000**| 0x03
-
-<br />
-
-**.set_accel(`rng:int`)**
->Sets the accelerometer fullscale range. Possible values include the following
-
- Const          | Value
-----------------|-------
-**ACCEL_FS_2**  | 0x00
-**ACCEL_FS_4**  | 0x01
-**ACCEL_FS_8**  | 0x02
-**ACCEL_FS_16** | 0x03
-
-<br />
-
-**.set_clock(`rng:int`)**
->Sets the clock. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. Possible values include the following
-
- Const            | Value
-------------------|-------
-**CLK_INTERNAL**  | 0x00
-**CLK_PLL_XGYRO** | 0x01
-**CLK_PLL_YGYRO** | 0x02
-**CLK_PLL_ZGYRO** | 0x03
-**CLK_PLL_EXT32K**| 0x04
-**CLK_PLL_EXT19M**| 0x05
-**CLK_KEEP_RESET**| 0x07
-
-<br />
-
-**.set_rate(`rate:int`)**
->This value is the amount to divid the gyroscope output rate. The argument can be between 1 and 255. The default is 4. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
 
 <br />
 
@@ -371,34 +405,6 @@ if mpu.passed_self_test:
 #### filters
 >This driver supports 2 different types of filters (Kalman and complementary). Complementary filters can only be applied to angles. If a complementary filter is flagged on angles it will return the average of all the samples taken. The amount of samples that are taken will be half of the `rate` argument that was supplied to the constructor.
 
-<br />
-
->Applying filters to various pieces of data can be done with the below flags
-
-Flag             | Value
------------------|-------
-**NONE**         | 0x00
-**FILTER_ACCEL** | 0x01
-**FILTER_GYRO**  | 0x02
-**FILTER_ANGLES**| 0x04
-**FILTER_ALL**   | 0x07
-
-
-<br />
-
->Determining which filters are applied to angles can be done with the following flags
-
- 
-Flag             | Value
------------------|-------
-**NONE**         | 0x00
-**ANGLE_KAL**    | 0x01
-**ANGLE_COMP**   | 0x02
-**ANGLE_BOTH**   | 0x03
-
-<br />
-
-**filter example**
 
 ```python
 from mpu6050 import MPU6050, FILTER_GYRO, FILTER_ANGLES, ANGLE_COMP
