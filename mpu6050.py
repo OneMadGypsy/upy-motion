@@ -190,21 +190,21 @@ class MPU6050(__I2CHelper):
         if self.__usefifo:
             data = self.__get_fifo_packet(12)
             if not data is None:
-                ax = data[0] * self.__accfact
-                ay = data[1] * self.__accfact
-                az = data[2] * self.__accfact
-                gx = data[3] * self.__gyrofact 
-                gy = data[4] * self.__gyrofact 
-                gz = data[5] * self.__gyrofact 
+                ax = data[0] / self.__accfact
+                ay = data[1] / self.__accfact
+                az = data[2] / self.__accfact
+                gx = data[3] / self.__gyrofact 
+                gy = data[4] / self.__gyrofact 
+                gz = data[5] / self.__gyrofact 
             
         if (not self.__usefifo) or (data is None):
             data = struct.unpack(">hhhhhhh", self.__readBytes(0x3b, 14))
-            ax = data[0] * self.__accfact 
-            ay = data[1] * self.__accfact 
-            az = data[2] * self.__accfact 
-            gx = data[4] * self.__gyrofact
-            gy = data[5] * self.__gyrofact
-            gz = data[6] * self.__gyrofact
+            ax = data[0] / self.__accfact 
+            ay = data[1] / self.__accfact 
+            az = data[2] / self.__accfact 
+            gx = data[4] / self.__gyrofact
+            gy = data[5] / self.__gyrofact
+            gz = data[6] / self.__gyrofact
             
         if self.__filtered & (FILTER_GYRO | FILTER_ACCEL):
            if self.__filtered & FILTER_GYRO:
@@ -262,15 +262,15 @@ class MPU6050(__I2CHelper):
         return self.celsius * 1.8 + 32    
         
     #__> CONSTRUCTOR
-    def __init__(self, bus:int, sda, scl, ofs:tuple=None, intr=None, callback=None, gyro:int=GYRO_FS_500, accel:int=ACCEL_FS_2, rate:int=4, dlpf:int=DLPF_BW_188, filtered:int=NONE, anglefilter:int=NONE, R:float=0.003, Q:float=0.001, A:float=0.8, angles:bool=False, addr:int=0x68, freq:int=400000) -> None:
+    def __init__(self, bus:int, sda, scl, ofs:tuple=None, intr=None, callback=None, clock:int=CLK_PLL_XGYRO, gyro:int=GYRO_FS_500, accel:int=ACCEL_FS_2, rate:int=4, dlpf:int=DLPF_BW_188, filtered:int=NONE, anglefilter:int=NONE, R:float=0.003, Q:float=0.001, A:float=0.8, angles:bool=False, addr:int=0x68, freq:int=400000) -> None:
         super().__init__(bus, sda, scl, addr, freq)
         self.__accsense , self.__accfact , self.__accfs   = 0, 0, accel
         self.__gyrosense, self.__gyrofact, self.__gyrofs  = 0, 0, gyro
         self.__rate     , self.__dlpf                     = rate, dlpf
         self.__intr     , self.__usefifo                  = None, False
         self.__fil_r    , self.__fil_p                    = None, None
-        self.__fil_gx   , self.__fil_gy, self.__fil_gz    = None, None, None 
-        self.__fil_ax   , self.__fil_ay, self.__fil_az    = None, None, None
+        self.__fil_gx   , self.__fil_gy  , self.__fil_gz  = None, None, None 
+        self.__fil_ax   , self.__fil_ay  , self.__fil_az  = None, None, None
         self.__useangles, self.__filtered, self.__aftype  = angles, filtered, anglefilter
         
         if filtered & FILTER_ANGLES:
@@ -285,13 +285,13 @@ class MPU6050(__I2CHelper):
         self.__enable_tests(False)
         self.__enable_sleep(False)
         
-        self.set_clock(0x1  )
-        self.set_gyro (gyro )
-        self.set_accel(accel)
-        self.set_rate (rate )
-        self.set_dlpf (dlpf )
+        self.__set_clock(clock)
+        self.__set_gyro (gyro )
+        self.__set_accel(accel)
+        self.__set_rate (rate )
+        self.__set_dlpf (dlpf )
         
-        utime.sleep_ms(100)                 #a moment to stabilize
+        utime.sleep_ms(100)                #a moment to stabilize
         for _ in range(20): self.angles    #this primes the Kalman filters
         
         self.__time  = utime.ticks_us()
@@ -322,26 +322,6 @@ class MPU6050(__I2CHelper):
         if not self.__usefifo is None:
             self.__enable_interrupts(False)
          
-    #SETTERS______________>
-    def set_dlpf(self, dlpf:int):
-        self.__writeBits(0x1a, 0x2, 0x3, dlpf)
-        
-    def set_rate(self, rate:int) -> None:
-        self.__writeByte(0x19, rate)
-        
-    def set_gyro(self, rng:int) -> None:
-        self.__gyrosense = [250, 500, 1000, 2000][rng]
-        self.__gyrofact  = self.__gyrosense/32768.0;
-        self.__writeBits(0x1b, 0x4, 0x2, rng)
-
-    def set_accel(self, rng:int) -> None:
-        self.__accsense = [2, 4, 8, 16][rng]
-        self.__accfact  = self.__accsense/32768.0;
-        self.__writeBits(0x1c, 0x4, 0x2, rng)
-     
-    def set_clock(self, source:int) -> None:
-        self.__writeBits(0x6b, 0x2, 0x3, source)
-    
     #PRINT________________>
     def print_offsets(self) -> None:
         ax, ay, az = self.__readWords(0x6   , 3)
@@ -414,6 +394,26 @@ class MPU6050(__I2CHelper):
 
     #__>        PRIVATE METHODS     <__#
     
+    #SETTERS______________>
+    def __set_dlpf(self, dlpf:int):
+        self.__writeBits(0x1a, 0x2, 0x3, dlpf)
+        
+    def __set_rate(self, rate:int) -> None:
+        self.__writeByte(0x19, rate)
+        
+    def __set_gyro(self, rng:int) -> None:
+        self.__gyrosense = [250, 500, 1000, 2000][rng]
+        self.__gyrofact  = [131, 66.5, 32.8, 16.4][rng]
+        self.__writeBits(0x1b, 0x4, 0x2, rng)
+
+    def __set_accel(self, rng:int) -> None:
+        self.__accsense = [2, 4, 8, 16][rng]
+        self.__accfact  = 32768.0/self.__accsense
+        self.__writeBits(0x1c, 0x4, 0x2, rng)
+     
+    def __set_clock(self, source:int) -> None:
+        self.__writeBits(0x6b, 0x2, 0x3, source)
+        
     #MISC_________________>
     def __handler(self, pin:Pin) -> None:           #interrupt handler
         if (not self.__intr is None) and (not self.__callback is None):
@@ -434,8 +434,8 @@ class MPU6050(__I2CHelper):
                 roll  = self.__fil_r.kalman(roll)
                 pitch = self.__fil_p.kalman(pitch)
             if self.__aftype & ANGLE_COMP:
-                roll  = self.__fil_r.complementary(gx/133, roll )
-                pitch = self.__fil_p.complementary(gy/133, pitch)
+                roll  = self.__fil_r.complementary(gx/self.__gyrofact, roll )
+                pitch = self.__fil_p.complementary(gy/self.__gyrofact, pitch)
             fx[s], fy[s] = roll, pitch
             utime.sleep_us(100)
         roll  = sum(fx)/smps
@@ -452,12 +452,12 @@ class MPU6050(__I2CHelper):
     #SELF-TEST____________>
     def __enable_tests(self, e:bool) -> None:
         #accelerometer test
-        self.set_accel(ACCEL_FS_8 if e else self.__accfs)
+        self.__set_accel(ACCEL_FS_8 if e else self.__accfs)
         self.__writeBit(0x1c, 0x7, e)
         self.__writeBit(0x1c, 0x6, e)
         self.__writeBit(0x1c, 0x5, e)
         #gyroscope test
-        self.set_gyro(GYRO_FS_500 if e else self.__gyrofs)
+        self.__set_gyro(GYRO_FS_500 if e else self.__gyrofs)
         self.__writeBit(0x1b, 0x7, e)
         self.__writeBit(0x1b, 0x6, e)
         self.__writeBit(0x1b, 0x5, e)
