@@ -37,7 +37,7 @@ _To discus features, bugs or share your own project that utilize code in this re
 
 **MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `clock`, `gyro`, `accel`, `rate`, `dlpf`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `angles`, `addr`, `freq`)**
 
-> Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data. The `rate` argument is the amount to divide the gyroscope output rate by. The argument can be between 1 and 255. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
+>It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data. The `rate` argument is the amount to divide the gyroscope output rate by. The argument can be between 1 and 255. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
 
 
 Arg             | Type       | Description                                    | Default
@@ -46,19 +46,19 @@ Arg             | Type       | Description                                    | 
 **sda**         | int or Pin | data pin                                       | **REQUIRED**
 **scl**         | int or Pin | clock pin                                      | **REQUIRED**
 **ofs**         | tuple      | axis offsets                                   | None
-**intr**        | int or Pin | interrupt pin                                  | None
-**callback**    | function   | function to call on interrupt                  | None
+**intr**        | int or Pin | interrupt pin (FIFO only)                      | None
+**callback**    | function   | function to call on interrupt (FIFO only)      | None
+**angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
 **clock**       | int        | clock source to use                            | CLK_PLL_XGYRO
 **gyro**        | int        | gyroscope full scale range                     | GYRO_FS_500
 **accel**       | int        | accelerometer full scale range                 | ACCEL_FS_2
-**rate**        | int        | sample rate                                    | 4
 **dlpf**        | int        | digital low-pass filter                        | DLPF_BW_188
+**rate**        | int        | sample rate                                    | 4
 **filtered**    | int        | which properties to filter                     | NONE
 **anglefilter** | int        | which filters to apply to angles               | NONE
 **R**           | float      | Kalman filter measure                          | 0.003
 **Q**           | float      | Kalman filter bias                             | 0.001
 **A**           | float      | complementary filter alpha                     | .8
-**angles**      | int        | return `angles` instead of `data` (FIFO only)  | False
 **addr**        | int        | device I2C address                             | 0x68
 **freq**        | int        | I2C frequency                                  | 400000
 
