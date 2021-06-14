@@ -64,7 +64,11 @@ Arg             | Type       | Description                                    | 
 
 <br />
 
-### Constants:
+-------
+
+<br />
+
+## Constants:
 
 <br />
 
@@ -110,7 +114,7 @@ Arg             | Type       | Description                                    | 
 #### dlpf
 >Possible values for the `dlpf` constructor argument include the following. The default dlpf is `DLPF_BW_188`. Headers marked **ms** below represent the milliseconds of delay a DLPF will create.
 
-Const          | Value | Accel(ms) | Gyro(ms) | FS (Khz)
+Const           | Value | Accel(ms) | Gyro(ms) | FS (Khz)
 ----------------|-------|-----------|----------|---------
 **DLPF_BW_256** | 0x00  | 0         |  0.98    | 8
 **DLPF_BW_188** | 0x01  | 2.0       |  1.9     | 1
