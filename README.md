@@ -274,7 +274,7 @@ if mpu.passed_self_test:
 from mpu6050 import MPU6050
 import utime
 
-mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51))
 
 if mpu.passed_self_test:
     while True:
@@ -292,7 +292,7 @@ if mpu.passed_self_test:
 from mpu6050 import MPU6050
 import utime
 
-mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51))
 
 if mpu.passed_self_test:
     while True:
@@ -341,7 +341,7 @@ _just like `data`, `angles` has its own print method, as well_
 from mpu6050 import MPU6050
 import utime
 
-mpu = MPU6050(1, 6, 7, ofs=(1314, -1629, 410, 28, -17, 51))
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51))
 
 if mpu.passed_self_test:
     while True:
@@ -360,7 +360,7 @@ def handler(data:tuple):
         roll, pitch = data
         mpu.print_from_angles(data)
 
-mpu = MPU6050(1, 6, 7, 2, (1314, -1629, 410, 28, -17, 51), handler, angles=True)
+mpu = MPU6050(1, 6, 7, (1314, -1629, 410, 28, -17, 51), 2, handler, angles=True)
 if mpu.passed_self_test:
     mpu.start()
 
