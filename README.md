@@ -169,7 +169,7 @@ Field       | Type  |  Description
 <br />
 
 **.set_clock(`rng:int`)**
->Sets the clock. The default clock is `CLK_PLL_XGYRO`. Possible values include the following
+>Sets the clock. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. Possible values include the following
 
  Const            | Value
 ------------------|-------
@@ -184,12 +184,12 @@ Field       | Type  |  Description
 <br />
 
 **.set_rate(`rate:int`)**
->Sets the sample rate. The argument can be between 1 and 255.
+>Sets the sample rate. The argument can be between 1 and 255. The default is 4. If a complementary filter is applied to angles, the amount of samples that are taken will be half of this number, and the returned value will be an average of those samples.
 
 <br />
 
 **.print_data()**
->Prints the gyroscope and accelerometer data
+>Prints the gyroscope and accelerometer data with any flagged filters automatically applied
 
 <br />
 
@@ -199,7 +199,7 @@ Field       | Type  |  Description
 <br />
 
 **.print_angles()**
->Prints the roll and pitch angles with a kalman filter automatically applied
+>Prints the roll and pitch angles with any flagged filters automatically applied
 
 <br />
 
@@ -269,6 +269,7 @@ if mpu.passed_self_test:
 <br />
 
 #### polling
+>If an interrupt pin and callback are not supplied the driver assumes you want to manage your own polling
 ```python
 from mpu6050 import MPU6050
 import utime
