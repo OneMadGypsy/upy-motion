@@ -37,7 +37,10 @@ _To discus features, bugs or share your own project that utilize code in this re
 
 **MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `angles`, `clock`, `gyro`, `accel`, `dlpf`, `rate`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `addr`, `freq`)**
 
->The argument for this constructor may seem daunting, but it can be broken up into sections that make it far easier to manage. From `bus` through `scl` sets up I2C connection with the device. `ofs` is the configuration offsets that help your device function accurately. Examples are provided later in this document that explain how to get this value. From `intr` through `angles` are interrupt related and only used if you want to use FIFO. From `clock` through `rate` are device specific settings. From `filtered` through `A` are filter specific settings. `addr` and `freq` are the device address and the frequency it should run at.
+>The argument for this constructor may seem daunting, but it can be broken up into sections that make it far easier to manage. From `bus` through `scl` sets up I2C connection with the device. `ofs` is the configuration offsets that help your device function accurately. Examples are provided later in this document that explain how to get this value. From `intr` through `angles` are interrupt related and only used if you want to use FIFO. From `clock` through `rate` are device specific settings. From `filtered` through `A` are filter specific settings. `addr` and `freq` are the device address and the frequency it should run at. There is very little reason why you should ever have to change these, which is why they are the very last arguments.
+
+
+>Most things are evidenced later in this document, but there are a couple of things that are easier to simply explain right here. Providing an interrupt pin and a callback will automatically trigger the script to use FIFO. The `rate` argument has 2 purposes. Whatever value you supply will be the divisor for gyroscope clock output, which is it's main intended purpose. However, my driver also uses half of this number to determine how many samples to average when using a complementary filter.
 
 
 Arg             | Type       | Description                                    | Default
@@ -73,29 +76,29 @@ Arg             | Type       | Description                                    | 
 <br />
 
 #### clock
->Possible values for the `clock` constructor argument are the following. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. Possible values include the following
+>Possible values for the `clock` constructor argument are the following. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. Possible values include the following. All clocks (except external) have their typical frequency listed. Actual frequency may vary +/- 3 Khz.
 
- Const            | Value
-------------------|-------
-**CLK_INTERNAL**  | 0x00
-**CLK_PLL_XGYRO** | 0x01
-**CLK_PLL_YGYRO** | 0x02
-**CLK_PLL_ZGYRO** | 0x03
-**CLK_PLL_EXT32K**| 0x04
-**CLK_PLL_EXT19M**| 0x05
-**CLK_KEEP_RESET**| 0x07
+ Const            | Value | Frequency
+------------------|-------|--------
+**CLK_INTERNAL**  | 0x00  | 8 Mhz
+**CLK_PLL_XGYRO** | 0x01  | 33 Khz
+**CLK_PLL_YGYRO** | 0x02  | 30 Khz
+**CLK_PLL_ZGYRO** | 0x03  | 27 Khz
+**CLK_PLL_EXT32K**| 0x04  | 32.768 Khz
+**CLK_PLL_EXT19M**| 0x05  | 19.2 Mhz
+**CLK_KEEP_RESET**| 0x07  | 0
 
 <br />
 
 #### gyro
 >Possible values for the `gyro` constructor argument are the following. The default gyro is `GYRO_FS_500`. The documents recommend that you use either a gyro or external clock for the best stability.
 
- Const          | Value
+ Const          | Value 
 ----------------|-------
-**GYRO_FS_250** | 0x00
-**GYRO_FS_500** | 0x01
-**GYRO_FS_1000**| 0x02
-**GYRO_FS_2000**| 0x03
+**GYRO_FS_250** | 0x00  
+**GYRO_FS_500** | 0x01  
+**GYRO_FS_1000**| 0x02  
+**GYRO_FS_2000**| 0x03  
 
 <br />
 
@@ -278,7 +281,7 @@ All the below examples can be copy/pasted, but you must make sure to provide the
 
 #### calibration
 
->The very first thing you should do is run the below script, When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to provide an `ofs` argument will result in your device auto-calibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run calibration from a fresh power-up of the device. If you do a good job calibrating, the numbers this returns can be used constantly, and you should not need to calibrate again.
+>The very first thing you should do is calibrate the device. When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to provide an `ofs` argument will result in your device auto-calibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run calibration from a fresh power-up of the device. If you do a good job calibrating, the numbers this returns can be used constantly, and you should not need to calibrate again unless you customize any of the device configuration arguments (ie. `clock`, `dlpf`, `rate`, `gyro` or `accel`). If you do intend to change any of the configuration arguments, you should add those changes to the script below before running it.
 
 ```python
 from mpu6050 import MPU6050
@@ -307,7 +310,9 @@ if mpu.passed_self_test:
 <br />
 
 #### polling
+
 >If an interrupt pin and callback are not supplied the driver assumes you want to manage your own polling
+
 ```python
 from mpu6050 import MPU6050
 import utime
@@ -324,6 +329,7 @@ if mpu.passed_self_test:
 <br />
 
 #### accessing data
+
 >data is a `namedtuple` and can be used like any other `namedtuple`. You can either unpack the properties or use them directly. The below examples illustrate both of these methods.
 
 ```python
@@ -357,6 +363,7 @@ if mpu.passed_self_test:
 <br />
 
 #### angles
+
 >`angles` are handled no different than `data`
 
 ```python
@@ -407,6 +414,7 @@ if mpu.passed_self_test:
 <br />
 
 #### filters
+
 >This driver supports 2 different types of filters (Kalman and complementary). Complementary filters can only be applied to angles. If a complementary filter is flagged on angles it will return the average of all the samples taken. The amount of samples that are taken will be half of the `rate` argument that was supplied to the constructor.
 
 
