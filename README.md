@@ -77,7 +77,7 @@ Arg             | Type       | Description                                    | 
 <br />
 
 **.data**
->Returns gyroscope and accelerometer data. This is a `namedtuple` with the following fields
+>Returns gyroscope and accelerometer data. This data may be filtered with a Kalman filter if the appropriate flag is supplied to the `filtered` argument in the constructor. This is a `namedtuple` with the following fields
 
 Field       | Type  |  Description
 ------------|-------|-----------------
@@ -91,7 +91,7 @@ Field       | Type  |  Description
 <br />
 
 **.angles**
->Returns Kalman filtered roll and pitch angles. This is a `namedtuple` with the following fields
+>Returns angles concocted from accelerometer data. These angles mey be filtered (with Kalman, complementar or both) according to the flag supplied for the `anglefilter` argument in the constructor. This is a `namedtuple` with the following fields
 
 Field       | Type  |  Description
 ------------|-------|-----------------
@@ -397,7 +397,7 @@ Flag             | Value
 
 <br />
 
-**filter example**
+#### filter example
 
 ```python
 from mpu6050 import MPU6050, FILTER_GYRO, FILTER_ANGLES, ANGLE_COMP
