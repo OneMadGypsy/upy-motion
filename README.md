@@ -1,7 +1,7 @@
 # upy-motion
 
 
-A simple MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion, but it does have a Kalman filter built in. The Kalman filter is automatically applied to the angle property, but (through a constructor argument) it can be applied to the raw accelerometer and gyroscope data, as well.
+An MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion, but it does have a Kalman filter built in. The Kalman filter is automatically applied to the angle property, but (through a constructor argument) it can be applied to the raw accelerometer and gyroscope data, as well.
 
 
 ### Community:
@@ -35,9 +35,9 @@ _To discus features, bugs or share your own project that utilize code in this re
 ## Docs:
 
 
-**MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `clock`, `gyro`, `accel`, `rate`, `dlpf`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `angles`, `addr`, `freq`)**
+**MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `angles`, `clock`, `gyro`, `accel`, `dlpf`, `rate`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `addr`, `freq`)**
 
->It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data. The `rate` argument is the amount to divide the gyroscope output rate by. The argument can be between 1 and 255. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
+>The argument for this constructor may seem daunting, but it can be broken up into sections that make it far easier to manage. From `bus` through `scl` sets up I2C connection with the device. `ofs` is the configuration offsets that help your device function accurately. Examples are provided later in this document that explain how to get this value. From `intr` through `angles` are interrupt related and only used if you want to use FIFO. From `clock` through `rate` are device specific settings. From `filtered` through `A` are filter specific settings. `addr` and `freq` are the device address and the frequency it should run at.
 
 
 Arg             | Type       | Description                                    | Default
