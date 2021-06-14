@@ -437,8 +437,8 @@ class MPU6050(__I2CHelper):
                 roll  = self.__fil_r.kalman(roll)
                 pitch = self.__fil_p.kalman(pitch)
             if self.__aftype & ANGLE_COMP:
-                roll  = self.__fil_r.complementary(gx/self.__gyrofact, roll )
-                pitch = self.__fil_p.complementary(gy/self.__gyrofact, pitch)
+                roll  = self.__fil_r.complementary(gx, roll )
+                pitch = self.__fil_p.complementary(gy, pitch)
             fx[s], fy[s] = roll, pitch
             utime.sleep_us(100)
         roll  = sum(fx)/smps
