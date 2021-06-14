@@ -77,7 +77,7 @@ Arg             | Type       | Description                                    | 
 <br />
 
 **.data**
->Returns gyroscope and accelerometer data. This data may be filtered with a Kalman filter if the appropriate flag is supplied to the `filtered` argument in the constructor. This is a `namedtuple` with the following fields
+>Returns gyroscope and accelerometer data. This data may be filtered with a Kalman filter if the appropriate flag is supplied to the `filtered` argument in the constructor. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters. This is a `namedtuple` with the following fields
 
 Field       | Type  |  Description
 ------------|-------|-----------------
@@ -91,7 +91,7 @@ Field       | Type  |  Description
 <br />
 
 **.angles**
->Returns angles concocted from accelerometer data. These angles mey be filtered (with Kalman, complementar or both) according to the flag supplied for the `anglefilter` argument in the constructor. This is a `namedtuple` with the following fields
+>Returns angles concocted from accelerometer data. These angles mey be filtered (with Kalman, complementar or both) according to the flag supplied for the `anglefilter` argument in the constructor. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters. This is a `namedtuple` with the following fields
 
 Field       | Type  |  Description
 ------------|-------|-----------------
