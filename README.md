@@ -238,7 +238,7 @@ All the below examples can be copy/pasted, but you must make sure to provide the
 
 <br />
 
-**calibration**
+#### calibration
 
 >The very first thing you should do is run the below script, When it completes it will print a small line of code that you need to copy and paste for use with the `ofs` argument. Failure to provide an `ofs` argument will result in your device auto-calibrating every time you instance it. Make sure your device is as flat and level as you can get it before running calibration. Only run calibration from a fresh power-up of the device. If you do a good job calibrating, the numbers this returns can be used constantly, and you should not need to calibrate again.
 
@@ -249,9 +249,9 @@ MPU6050(1, 6, 7)
 ```
 <br />
 
-**FIFO**
+#### FIFO
 
->Supplying an interrupt pin and a callback is necessary to trigger FIFO. You must also call `start()` for interrupts to begin. The `data` argument in the handler will contain all of the accelerometer and gyroscope data.
+>Supplying an interrupt pin and a callback will trigger the driver to use FIFO automatically. You must also call `start()` for interrupts to begin. The `data` argument in the handler will contain all of the accelerometer and gyroscope data, unless you set the `angles` constructor argument to `True`, in which case `data` will then contain angles values. 
 
 ```python
 from mpu6050 import MPU6050
@@ -268,7 +268,7 @@ if mpu.passed_self_test:
 
 <br />
 
-**polling**
+#### polling
 ```python
 from mpu6050 import MPU6050
 import utime
@@ -284,7 +284,7 @@ if mpu.passed_self_test:
 
 <br />
 
-**accessing data**
+#### accessing data
 >data is a `namedtuple` and can be used like any other `namedtuple`. You can either unpack the properties or use them directly. The below examples illustrate both of these methods.
 
 ```python
@@ -317,7 +317,7 @@ if mpu.passed_self_test:
 
 <br />
 
-**angles**
+#### angles
 >`angles` are handled no different than `data`
 
 ```python
@@ -367,7 +367,7 @@ if mpu.passed_self_test:
 
 <br />
 
-**filters**
+#### filters
 >This driver supports 2 different types of filters (Kalman and complementary). Complementary filters can only be applied to angles. If a complementary filter is flagged on angles it will return the average of all the samples taken. The amount of samples that are taken will be half of the `rate` argument that was supplied to the constructor.
 
 <br />
@@ -397,7 +397,7 @@ Flag             | Value
 
 <br />
 
-#### filter example
+**filter example**
 
 ```python
 from mpu6050 import MPU6050, FILTER_GYRO, FILTER_ANGLES, ANGLE_COMP
