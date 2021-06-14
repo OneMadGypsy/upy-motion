@@ -132,15 +132,15 @@ Field       | Type  |  Description
 **.set_dlpf(`dlpf:int`)**
 >Sets the digital low-pass filter. Possible values include the following
 
- Const          | Value
-----------------|-------
-**DLPF_BW_256** | 0x00
-**DLPF_BW_188** | 0x01
-**DLPF_BW_98**  | 0x02
-**DLPF_BW_42**  | 0x03
-**DLPF_BW_20**  | 0x04
-**DLPF_BW_10**  | 0x05
-**DLPF_BW_5**   | 0x06
+ Const          | Value | Accel(ms) | Gyro (ms) | FS (Khz)
+----------------|-------|-----------|-----------|---------
+**DLPF_BW_256** | 0x00  | 0         |  0.98     | 8
+**DLPF_BW_188** | 0x01  | 2.0       |  1.9      | 1
+**DLPF_BW_98**  | 0x02  | 3.0       |  2.8      | 1
+**DLPF_BW_42**  | 0x03  | 4.9       |  4.8      | 1
+**DLPF_BW_20**  | 0x04  | 8.5       |  8.3      | 1
+**DLPF_BW_10**  | 0x05  | 13.8      | 13.4      | 1
+**DLPF_BW_5**   | 0x06  | 19.0      | 18.6      | 1
 
 <br />
 
@@ -184,12 +184,12 @@ Field       | Type  |  Description
 <br />
 
 **.set_rate(`rate:int`)**
->Sets the sample rate. The argument can be between 1 and 255. The default is 4. If a complementary filter is applied to angles, the amount of samples that are taken will be half of this number, and the returned value will be an average of those samples.
+>This value is the amount to divid the gyroscope output rate. The argument can be between 1 and 255. The default is 4. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
 
 <br />
 
 **.print_data()**
->Prints the gyroscope and accelerometer data with any flagged filters automatically applied
+>Prints the gyroscope and accelerometer data with any flagged filters automatically applied. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters.
 
 <br />
 
@@ -199,7 +199,7 @@ Field       | Type  |  Description
 <br />
 
 **.print_angles()**
->Prints the roll and pitch angles with any flagged filters automatically applied
+>Prints the roll and pitch angles with any flagged filters automatically applied. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters.
 
 <br />
 
@@ -209,12 +209,12 @@ Field       | Type  |  Description
 <br />
 
 **.print_celsius()**
->Prints the temperature in celsius
+>Prints the temperature in Celsius
 
 <br />
 
 **.print_fahrenheit()**
->Prints the temperature in fahrenheit
+>Prints the temperature in Fahrenheit
 
 <br />
 
