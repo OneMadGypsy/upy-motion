@@ -1,7 +1,17 @@
 # upy-motion
 
 
-An MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion, but it does have a Kalman filter built in. The Kalman filter is automatically applied to the angle property, but (through a constructor argument) it can be applied to the raw accelerometer and gyroscope data, as well.
+An MPU6050 driver written in micropython. This driver should be compatible with any micropython device. This driver does not support quaternion
+
+### Features:
+
+1) Auto-calibration if the `ofs` argument is omitted
+2) Automatic FIFO if an interrupt pin and callback are supplied
+3) Kalman and complimentary filters are built in and automatically applied to data based on flags you set
+4) Data can be retrieved as raw gyroscope and accelerometer data or as angles (roll, pitch only)
+5) Temperature can be retrieved as Celsius or Fahrenheit
+6) Numerous print options available that format the data into a very neat and easy-to-read display
+7) Everything you can do is well-documented below
 
 
 ### Community:
