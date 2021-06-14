@@ -35,7 +35,7 @@ _To discus features, bugs or share your own project that utilize code in this re
 ## Docs:
 
 
-**MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `gyro`, `accel`, `rate`, `dlpf`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `angles`, `addr`, `freq`)**
+**MPU6050(`bus`, `sda`, `scl`, `ofs`, `intr`, `callback`, `clock`, `gyro`, `accel`, `rate`, `dlpf`, `filtered`, `anglefilter`, `R`, `Q`, `A`, `angles`, `addr`, `freq`)**
 
 > Main MPU6050 interface. It is only necessary to provide an interrupt pin and callback if you intend to use FIFO. If you do not provide an `ofs` argument the device will auto calibrate. The `angles` argument is used to tell the script to provide angles in the FIFO callback instead of axis data. The `rate` argument is the amount to divide the gyroscope output rate by. The argument can be between 1 and 255. For this driver, half of this value is also used as the amount of samples to average from the complementary filter. As an example, if this value is 20 and a complementary filter is used, the gyroscope output rate will be divided by 20, and the comlementary filter will return the average of 10 samples.
 
@@ -48,7 +48,7 @@ Arg             | Type       | Description                                    | 
 **ofs**         | tuple      | axis offsets                                   | None
 **intr**        | int or Pin | interrupt pin                                  | None
 **callback**    | function   | function to call on interrupt                  | None
-**clock**       | int        | gyroscope full scale range                     | CLK_PLL_XGYRO
+**clock**       | int        | clock source to use                            | CLK_PLL_XGYRO
 **gyro**        | int        | gyroscope full scale range                     | GYRO_FS_500
 **accel**       | int        | accelerometer full scale range                 | ACCEL_FS_2
 **rate**        | int        | sample rate                                    | 4
