@@ -12,7 +12,7 @@ An MPU6050 driver written in micropython. This driver should be compatible with 
 5) Data can be retrieved as raw gyroscope and accelerometer data or as angles (roll, pitch only)
 6) Temperature can be retrieved as Celsius or Fahrenheit
 7) Numerous print options available that format the data into a very neat and easy-to-read display
-8) Self-test is built in and internally managed so using just one property will tell you if your device is functioning properly
+8) Self-test is built in and using just one property will tell you if your device is functioning properly
 9) Everything you can do is well-documented below
 
 
