@@ -103,7 +103,7 @@ Arg             | Type       | Description                                    | 
 <br />
 
 #### gyro
->Possible values for the `gyro` constructor argument are the following. The default gyro is `GYRO_FS_500`. The documents recommend that you use either a gyro or external clock for the best stability.
+>Possible values for the `gyro` constructor argument are the following. The default gyro is `GYRO_FS_500`.
 
  Const          | Value 
 ----------------|-------
