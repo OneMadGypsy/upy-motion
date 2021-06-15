@@ -88,7 +88,7 @@ Arg             | Type       | Description                                    | 
 <br />
 
 #### clock
->Possible values for the `clock` constructor argument are the following. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. Possible values include the following. All clocks (except external) have their typical frequency listed. Actual frequency may vary +/- 3 Khz.
+>Possible values for the `clock` constructor argument are the following. The default clock is `CLK_PLL_XGYRO`. The documents recommend that you use one of the gyro clocks. All clocks (except external) have their typical frequency listed. Actual frequency may vary +/- 3 Khz.
 
  Const            | Value | Frequency
 ------------------|-------|--------
