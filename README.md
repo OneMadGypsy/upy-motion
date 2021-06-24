@@ -208,6 +208,16 @@ Field       | Type  |  Description
 
 <br />
 
+**.int_angles**
+>Returns angles concocted from accelerometer data as _ints_. These angles may be filtered (with Kalman, complementar or both) according to the flag supplied for the `anglefilter` argument in the constructor. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters. This is a `namedtuple` with the following fields
+
+Field       | Type  |  Description
+------------|-------|-----------------
+**.roll**   | int   | roll angle
+**.pitch**  | int   | pitch angle
+
+<br />
+
 **.passed_self_test**
 >True or False passed system self-test
 
@@ -251,8 +261,8 @@ Field       | Type  |  Description
 
 <br />
 
-**.print_angles()**
->Prints the roll and pitch angles with any flagged filters automatically applied. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters.
+**.print_angles(`asint:bool=False`)**
+>Prints the roll and pitch angles with any flagged filters automatically applied. If `asint` is `True` angles will be gathered from `.int_angles`. The [filters](https://github.com/OneMadGypsy/upy-motion/blob/main/README.md#filters) section contains more information on how to use filters.
 
 <br />
 
