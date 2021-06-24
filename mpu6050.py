@@ -4,8 +4,6 @@ from collections import namedtuple
 import struct, utime, math
 
 _R2D            = 180/math.pi
-_R              = 0.003
-_Q              = 0.01
 
 NONE            = const(0x00)
 
@@ -53,7 +51,7 @@ CLK_KEEP_RESET  = const(0x07)
    
 # Data Structure
 _D   = namedtuple('D', ('acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'))
-_A   = namedtuple('K', ('roll', 'pitch'))
+_A   = namedtuple('A', ('roll', 'pitch'))
 
 # Data Formatting
 _SEP = '-'*60
@@ -173,7 +171,6 @@ class __Filters(object):
         self.__c     = (1-self.__alpha) * (self.__c + rate * self.__delta) + self.__alpha * angle
         return self.__c
 
-
 #__> MPU6050
 class MPU6050(__I2CHelper):
     
@@ -230,7 +227,19 @@ class MPU6050(__I2CHelper):
         pitch = math.atan(ay/math.sqrt(ax**2+z2))*_R2D
                 
         return _A(roll, pitch)
-     
+           
+    @property
+    def int_angles(self) -> tuple:
+        if (self.__aftype & ANGLE_BOTH) and (self.__filtered & FILTER_ANGLES):
+            return self.__filtered_angles(True)
+            
+        ax, ay, az, gx, gy, gz = self.data
+        z2    = az**2
+        roll  = math.atan(ax/math.sqrt(ay**2+z2))*_R2D
+        pitch = math.atan(ay/math.sqrt(ax**2+z2))*_R2D
+                
+        return _A(int(roll), int(pitch))
+        
     @property
     def connected(self) -> bool:
         return self.device_id == 0x34
@@ -340,8 +349,11 @@ class MPU6050(__I2CHelper):
         g = _OUT.format('GYROSCOPE'    , _W[gx<0], abs(gx), _W[gy<0], abs(gy), _W[gz<0], abs(gz))
         print(_C.format(a, g, _SEP))
       
-    def print_angles(self) -> None:
-        self.print_from_angles(self.angles[0:2]) 
+    def print_angles(self, asint:bool=False) -> None:
+        if asint:
+            self.print_from_angles(self.int_angles)
+            return
+        self.print_from_angles(self.angles) 
         
     def print_from_angles(self, angles:tuple) -> None:
         r, p = angles[0:2]
@@ -425,14 +437,16 @@ class MPU6050(__I2CHelper):
                 return
             self.__callback(self.data)
            
-    def __filtered_angles(self):                    #manages all angle filtering
+    def __filtered_angles(self, asint:bool=False):                    #manages all angle filtering
         smps   = self.__rate//2
         fx, fy = [0.00]*(smps), [0.00]*(smps)
         for s in range(smps):
             ax, ay, az, gx, gy, gz = self.data
             z2    = az**2
-            roll  = math.atan(ax/math.sqrt(ay**2+z2))*_R2D
-            pitch = math.atan(ay/math.sqrt(ax**2+z2))*_R2D
+            ay2z2 = math.sqrt(ay**2+z2)
+            ax2z2 = math.sqrt(ax**2+z2)
+            roll  = 0 if not ay2z2 else math.atan(ax/ay2z2)*_R2D
+            pitch = 0 if not ax2z2 else math.atan(ay/ax2z2)*_R2D
             if self.__aftype & ANGLE_KAL:
                 roll  = self.__fil_r.kalman(roll)
                 pitch = self.__fil_p.kalman(pitch)
@@ -443,6 +457,9 @@ class MPU6050(__I2CHelper):
             utime.sleep_us(100)
         roll  = sum(fx)/smps
         pitch = sum(fy)/smps
+        
+        if asint:
+            return _A(int(roll), int(pitch))
         
         return _A(roll, pitch)
              
